@@ -25,7 +25,6 @@ from model.claude import ClaudeModel
 
 
 
-# AIzaSyAiLHN0SsxnsYjj3ycy8jv12JUUbIPkBkw
 GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY")
 street_view_resolution = "640x400"
 
