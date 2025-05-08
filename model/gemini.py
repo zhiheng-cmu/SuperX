@@ -10,7 +10,6 @@ from PIL import Image
 from dotenv import load_dotenv
 from tqdm import tqdm
 
-
 GEMINI_MODEL = "gemini-2.0-flash"
 
 
@@ -27,6 +26,7 @@ def check_uploaded_file(file_path):
         print(f"The images have been uploaded and are still valid on Gemini: {file_path}")
         return True
 
+
 class GeminiModel:
     def __init__(self):
         # Load environment variables
@@ -38,7 +38,7 @@ class GeminiModel:
         self.client = genai.Client(api_key=api_key)
         self.model = self.client.models
         # self.model = genai.GenerativeModel(GEMINI_MODEL)
-        
+
     def analyze_images(self, image_paths, prompt_list, out_dir, batches=None):
         """Analyze multiple images with a given prompt."""
         filename_output_json = f"{out_dir}/uploaded_filename_list_{len(image_paths)}.json"
@@ -56,7 +56,8 @@ class GeminiModel:
             upload_filename_list = []
         try:
             if len(upload_filename_list) == len(image_paths):
-                for filename in tqdm(upload_filename_list, desc="files already uploaded, retrieving them from remote..."):
+                for filename in tqdm(upload_filename_list,
+                                     desc="files already uploaded, retrieving them from remote..."):
                     myfile = self.client.files.get(name=filename)
                     upload_filelist.append(myfile)
             else:
@@ -87,9 +88,9 @@ class GeminiModel:
 
                 if not upload_filelist:
                     raise ValueError("No images were successfully processed")
-            
+
             print(f"\nAnalyzing {len(upload_filelist)} images...")
-            
+
             # Generate content with specific configuration
             result = {}
             if batches is not None:
@@ -98,7 +99,8 @@ class GeminiModel:
                     print(filelist)
                     for prompt_idx in range(len(prompt_list)):
                         prompt = prompt_list[prompt_idx]
-                        print(f"analyzing prompt {prompt_idx}/{len(prompt_list)} with images {batch_idx_pair[0]}:{batch_idx_pair[1]}...")
+                        print(
+                            f"analyzing prompt {prompt_idx}/{len(prompt_list)} with images {batch_idx_pair[0]}:{batch_idx_pair[1]}...")
                         response = self.model.generate_content(
                             model=GEMINI_MODEL,
                             contents=[
@@ -130,10 +132,52 @@ class GeminiModel:
                 # sys.stdout.write("\rDone!                           \n")  # Clear the line and print 'Done!'
 
             return result
-            
+
         except Exception as e:
             print(f"Error in Gemini analysis: {str(e)}")
             return None
+
+    def analyze_single_image(self, image_path, prompt_list):
+        try:
+            myfile = self.client.files.upload(file=image_path)
+            uploaded_file_name = myfile.name
+
+        except Exception as e:
+            print(f"Error in Gemini analysis: {str(e)}")
+            return None
+
+        # Generate content with specific configuration
+        print(f"\nAnalyzing image {image_path}...")
+        result = {}
+        for prompt_idx in range(len(prompt_list)):
+            prompt = prompt_list[prompt_idx]
+            print(f"analyzing prompt {prompt_idx}/{len(prompt_list)} with the full set...")
+            response = self.model.generate_content(
+                model=GEMINI_MODEL,
+                contents=[
+                    uploaded_file_name,
+                    prompt
+                ]
+            )
+            result[prompt] = response.text
+
+        return result
+
+
+    def analyze_text(self, prompt_list):
+        result = {}
+        for prompt_idx in range(len(prompt_list)):
+            prompt = prompt_list[prompt_idx]
+            print(f"analyzing prompt {prompt_idx}/{len(prompt_list)} with the full set...")
+            response = self.model.generate_content(
+                model=GEMINI_MODEL,
+                contents=[
+                    prompt
+                ]
+            )
+            result[prompt] = response.text
+
+        return result
 
 
     @staticmethod
@@ -141,7 +185,7 @@ class GeminiModel:
         """Extract JSON data from response text."""
         if not text:
             return None
-            
+
         try:
             return json.loads(text)
         except json.JSONDecodeError:
@@ -152,7 +196,7 @@ class GeminiModel:
                     return json.loads(json_match.group(1))
                 except json.JSONDecodeError:
                     pass
-                    
+
             # Try finding any JSON-like structure
             json_pattern = r'\{[^}]*\}'
             matches = re.findall(json_pattern, text)
@@ -161,7 +205,7 @@ class GeminiModel:
                     return json.loads(matches[0])
                 except json.JSONDecodeError:
                     pass
-                    
+
         return None
 
     @staticmethod
