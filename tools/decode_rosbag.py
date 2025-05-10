@@ -4,7 +4,8 @@ from cv_bridge import CvBridge
 
 
 # Path to your bag file and topic
-data_dir = "/home/zl3466/Documents/dataset/SuperX/mini"
+# data_dir = "/home/zl3466/Documents/dataset/SuperX/mini"
+data_dir = "/Users/zhihengli/Downloads/SuperX"
 img_bag_dir = f"{data_dir}/camera_images00.bag"
 
 image_topic = '/camera/image'  # or your specific topic
