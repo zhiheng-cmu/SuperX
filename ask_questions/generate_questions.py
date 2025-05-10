@@ -145,7 +145,10 @@ def main():
         for one_frame in obj_frames:
             del one_frame["id"]
             del one_frame["bbox3d"]
-
+    with open(f"{out_dir}/scene_graph.json", "w") as f:
+        json.dump(obj_record_dict_clean, f, indent=4)
+    with open(f"{out_dir}/scene_graph_clean.json", "w") as f:
+        json.dump(obj_record_dict_clean, f, indent=4)
 
 
 if __name__ == "__main__":
