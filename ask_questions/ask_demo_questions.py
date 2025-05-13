@@ -67,7 +67,7 @@ def main():
     question_list = [
 
         # Spatial Consistency: instance-level object retrieval based on spatial relations
-        f"You are at the cone, and the plant on the table is on fire. I need to put out the fire asap. Which fire extinguisher should you use?\n",
+        f"I am at the cone, and the plant on the table is on fire. I need to put out the fire asap. Which fire extinguisher should I use?\n",
 
         # Temporal Consistency: given past state, inquire current state
         f"I left my jacket on a chair next to the plant on the table a few minutes ago, but it is not there anymore. Where is my jacket now? \n",
