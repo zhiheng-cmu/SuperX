@@ -70,9 +70,9 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     img_dir = f"{data_dir}/image"
-    # instance_bbox_dir = f"{data_dir}/json_serialization_mecanum"
+    instance_bbox_dir = f"{data_dir}/json_serialization_mecanum"
     # ann_dir = f"{data_dir}/annotations"
-    instance_bbox_dir = f"{data_dir}/gates_mapping"
+    # instance_bbox_dir = f"{data_dir}/gates_mapping"
 
     bbox_list = os.listdir(instance_bbox_dir)
     bbox_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
@@ -128,14 +128,17 @@ def main():
                     # do not record repeated disappeared status
                     if obj_frame_dict[obj_id][-1]["status"] == "disappeared":
                         continue
-                    obj_frame_dict[obj_id].append(
-                        {
-                            "tp": trim_tp(obj_record["latest_stamp"]),
-                            "id": obj_record["id"],
-                            "label": obj_record["label"],
-                            "status": obj_record["status"]
-                        }
-                    )
+                    else:
+                        if obj_id == "35":
+                            print(f"{obj_frame_dict[obj_id][-1]['status']}, yesyes")
+                        obj_frame_dict[obj_id].append(
+                            {
+                                "tp": trim_tp(obj_record["latest_stamp"]),
+                                "id": obj_record["id"],
+                                "label": obj_record["label"],
+                                "status": obj_record["status"]
+                            }
+                        )
                 elif obj_record["status"] == "persistent":
                     # do not record repeated persistent status. Save the last repeated persistent record in last_status_dict
                     if obj_frame_dict[obj_id][-1]["status"] == "persistent":
@@ -198,8 +201,8 @@ def main():
         clean_frame_dict[obj_id] = frame_list
         for one_frame in frame_list:
             del one_frame["id"]
-            if "spatial_relations" in one_frame.keys():
-                del one_frame["spatial_relations"]
+            # if "spatial_relations" in one_frame.keys():
+            #     del one_frame["spatial_relations"]
 
     with open(f"{out_dir}/scene_graph_clean.json", "w") as f:
         json.dump(clean_frame_dict, f, indent=4)

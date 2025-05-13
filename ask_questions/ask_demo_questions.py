@@ -51,7 +51,7 @@ def main():
         f"'tp': unix timestamp of the frame of appearance, \n"
         f"'label': the object's semantic label, \n"
         f"'center': the object's center location [x, y, z] in global coordinate frame with z representing elevation, \n"
-        # f"'spatial_relationship': a dict of object ids that this object is 'in', 'contain', 'on', 'under', or 'beside'.\n"
+        f"'spatial_relationship': a dict of object ids that this object is 'in', 'contain', 'on', 'under', or 'beside'.\n"
         f"'status': a string describing the object's temporal status relative to its previous appearance. "
         f"New means this is the first time this object is observed. \n"
         )
