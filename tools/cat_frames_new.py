@@ -81,10 +81,11 @@ def main():
 
     status_list = []
     obj_frame_dict = {}
+    last_status_dict = {}
     for bbox_json in tqdm(bbox_list, desc="Processing bounding boxes"):
         bbox_data = json.load(open(f"{instance_bbox_dir}/{bbox_json}"))
         obj_list = list(bbox_data.keys())
-        tp = int(bbox_json.split(".")[0])
+        # tp = int(bbox_json.split(".")[0])
         # if tp < start_tp or tp > end_tp:
         #     print(tp, start_tp, end_tp)
         #     continue
@@ -94,6 +95,7 @@ def main():
                 status_list.append(obj_record["status"])
             # a new object
             if obj_id not in obj_frame_dict.keys():
+                last_status_dict[obj_id] = None
                 if obj_record["status"] == "disappeared":
                     obj_frame_dict[obj_id] = [
                         {
@@ -116,6 +118,12 @@ def main():
                     ]
             # a seen object
             else:
+                # if this is a change of status
+                if obj_record["status"] != obj_frame_dict[obj_id][-1]["status"] and last_status_dict[obj_id] is not None:
+                    obj_frame_dict[obj_id].append(last_status_dict[obj_id])
+                    last_status_dict[obj_id] = None
+
+                # handle different status
                 if obj_record["status"] == "disappeared":
                     # do not record repeated disappeared status
                     if obj_frame_dict[obj_id][-1]["status"] == "disappeared":
@@ -129,12 +137,9 @@ def main():
                         }
                     )
                 elif obj_record["status"] == "persistent":
-                    # do not record repeated persistent status
-                    # if obj_frame_dict[obj_id][-1]["status"] == "persistent":
-                    #     continue
-                    # else:
-                    obj_frame_dict[obj_id].append(
-                        {
+                    # do not record repeated persistent status. Save the last repeated persistent record in last_status_dict
+                    if obj_frame_dict[obj_id][-1]["status"] == "persistent":
+                        last_status_dict[obj_id] = {
                             "tp": trim_tp(obj_record["latest_stamp"]),
                             "id": obj_record["id"],
                             "label": obj_record["label"],
@@ -142,7 +147,18 @@ def main():
                             "spatial_relations": clean_spatial_relations(obj_record["spatial_relations"]),
                             "status": obj_record["status"]
                         }
-                    )
+                        continue
+                    else:
+                        obj_frame_dict[obj_id].append(
+                            {
+                                "tp": trim_tp(obj_record["latest_stamp"]),
+                                "id": obj_record["id"],
+                                "label": obj_record["label"],
+                                "center": obj_record["center"],
+                                "spatial_relations": clean_spatial_relations(obj_record["spatial_relations"]),
+                                "status": obj_record["status"]
+                            }
+                        )
                 else:
                     obj_frame_dict[obj_id].append(
                         {
@@ -154,6 +170,12 @@ def main():
                             "status": obj_record["status"]
                         }
                     )
+    # end of scene
+    for obj_id in obj_frame_dict.keys():
+        # if the object has not-yet-recorded repeated last frame
+        if last_status_dict[obj_id] is not None and last_status_dict[obj_id]["tp"] != obj_frame_dict[obj_id][-1]["tp"]:
+            obj_frame_dict[obj_id].append(last_status_dict[obj_id])
+            last_status_dict[obj_id] = None
 
 
     # sort frame list by tp for each object
@@ -176,8 +198,10 @@ def main():
         clean_frame_dict[obj_id] = frame_list
         for one_frame in frame_list:
             del one_frame["id"]
+            if "spatial_relations" in one_frame.keys():
+                del one_frame["spatial_relations"]
 
-    with open(f"{out_dir}/scene_graph_clean_full.json", "w") as f:
+    with open(f"{out_dir}/scene_graph_clean.json", "w") as f:
         json.dump(clean_frame_dict, f, indent=4)
     print(status_list)
 
