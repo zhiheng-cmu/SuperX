@@ -53,8 +53,12 @@ def clean_spatial_relations(spatial_relations_dict):
     return clean_dict
 
 def main():
-    root_dir = "/media/zl3466/新加卷/dataset/SuperX"
-    data_dir = "/media/zl3466/新加卷/dataset/SuperX/set_0"
+    # root_dir = "/media/zl3466/新加卷/dataset/SuperX"
+    start_tp = 1744413306337674496
+    end_tp = 1744413334057229568
+
+    # data_dir = "/media/zl3466/新加卷/dataset/SuperX/set_0"
+    data_dir = "/Users/zhihengli/Downloads/SuperX/set_0"
     out_dir = f"{data_dir}/outputs"
     os.makedirs(out_dir, exist_ok=True)
 
@@ -72,7 +76,10 @@ def main():
     for bbox_json in tqdm(bbox_list, desc="Processing bounding boxes"):
         bbox_data = json.load(open(f"{instance_bbox_dir}/{bbox_json}"))
         obj_list = list(bbox_data.keys())
-        # tp = int(bbox_json.split(".")[0])
+        tp = int(bbox_json.split(".")[0])
+        if tp < start_tp or tp > end_tp:
+            print(tp, start_tp, end_tp)
+            continue
         for obj_id in obj_list:
             obj_record = bbox_data[obj_id]
             if obj_record["status"] not in status_list:
@@ -123,7 +130,7 @@ def main():
         for one_frame in frame_list:
             del one_frame["id"]
 
-    with open(f"{out_dir}/scene_graph_clean.json", "w") as f:
+    with open(f"{out_dir}/scene_graph_clean_mini.json", "w") as f:
         json.dump(clean_frame_dict, f, indent=4)
     print(status_list)
     # last_frame_json = bbox_list[-1]

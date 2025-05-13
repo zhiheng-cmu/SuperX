@@ -1,3 +1,5 @@
+import sys
+
 import cv2
 import os
 import re
@@ -127,9 +129,11 @@ def create_video_from_specific_images(image_paths, output_path, fps=10, frame_si
 # Example usage
 if __name__ == "__main__":
     # Example 3: Integrate with your code to create video from masked images
-    root_dir = "/home/zl3466/Documents/dataset/SuperX/mini"
-    img_folder = f"{root_dir}/img_seg"
-    output_video = f"{root_dir}/seg_video.mp4"
+    # root_dir = "/home/zl3466/Documents/dataset/SuperX/mini"
+    root_dir = "/Volumes/新加卷/dataset/SuperX/set_0"
+    img_folder = f"{root_dir}/image"
+    # output_video = f"{root_dir}/full_video.mp4"
+    output_video = "/Users/zhihengli/Downloads/full_video.mp4"
 
     # Get all masked images
     masked_images = []

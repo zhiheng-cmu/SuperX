@@ -17,25 +17,6 @@ post_prompt = "Give your answer between <answer></answer> tags.\n"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.gemini_utils import *
 
-
-def generate_ranges(total_length, clip_size=20):
-    ranges = []
-    start = 0
-    while start < total_length:
-        end = min(start + clip_size, total_length)
-        ranges.append([start, end])
-        start = end
-    return ranges
-
-
-def extract_answer(text):
-    pattern = r'<answer>\s*(.*?)\s*</answer>'
-    match = re.search(pattern, text, re.DOTALL)
-    if match:
-        return match.group(1).strip()
-    return ""
-
-
 def find_collection(obj_id, obj_content, collection_dict, tp):
     for abs_id in collection_dict.keys():
         if int(obj_id) in collection_dict[abs_id]["id"]:
@@ -45,93 +26,8 @@ def find_collection(obj_id, obj_content, collection_dict, tp):
                 obj_content["tp"] = tp
                 collection_dict[abs_id]["frames"].append(obj_content)
 
-def calculate_match_score(list1, list2):
-    """
-    Calculate a match score based on the following rule:
-    - +1 if an id in list2 is also in list1
-    - -1 if an id in list2 is not in list1
-
-    Args:
-        list1 (list): Reference list of integers
-        list2 (list): List of integers to compare against list1
-
-    Returns:
-        int: Total score
-        float: Score as a percentage of the maximum possible score
-    """
-    if not list2:  # If list2 is empty
-        return 0, 0.0  # No score possible
-
-    # Convert list1 to a set for faster lookup
-    set1 = set(list1)
-
-    score = 0
-
-    for item in list2:
-        if item in set1:
-            score += 1  # +1 if item is in list1
-        else:
-            score -= 1  # -1 if item is not in list1
-            print("one false positive!")
-
-    max_possible_score = len(list1)
-    percentage = score / max_possible_score * 100
-    return score, percentage
 
 
-def obj_mask_viz(tp, full_img, labels, masks, bboxes, confidences, out_dir):
-    os.makedirs(out_dir, exist_ok=True)
-    output_img = full_img.copy()
-    n_objects = len(labels)
-
-    # Use the 'tab20' colormap for up to 20 colors, or 'hsv' for more
-    colormap = cm.hsv
-
-    # Generate colors and convert to BGR for OpenCV
-    colors = []
-    for i in range(n_objects):
-        # Generate color from colormap (normalized to [0, 1])
-        rgb = colormap(i / max(1, n_objects - 1))[:3]
-        # Convert to BGR (OpenCV format) and scale to [0, 255]
-        bgr = tuple(int(c * 255) for c in rgb[::-1])
-        colors.append(bgr)
-
-    # Create a mask overlay for all objects
-    mask_overlay = np.zeros_like(full_img)
-
-    # Project each mask onto the image
-    for i in range(len(labels)):
-        label = labels[i]
-        mask = masks[i]
-        bbox = bboxes[i]
-        confidence = confidences[i]
-
-        # Get color for this object
-        color = colors[i]
-
-        # Create colored mask
-        colored_mask = np.zeros_like(full_img)
-        colored_mask[mask > 0] = color
-
-        # Add to the overlay
-        mask_overlay = np.where(mask[..., np.newaxis] > 0, colored_mask, mask_overlay)
-
-        # Draw bounding box
-        x1, y1, x2, y2 = bbox.astype(int)
-        cv2.rectangle(output_img, (x1, y1), (x2, y2), color, 2)
-
-        # Add label text
-        label_text = f"{label}: {confidence:.2f}"
-        cv2.putText(output_img, label_text, (x1, y1 - 5),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-
-    # Combine the original image with the mask overlay
-    alpha = 0.5  # Transparency factor
-    output_img = cv2.addWeighted(output_img, 1, mask_overlay, alpha, 0)
-
-    # Save the output image
-    output_path = f"{out_dir}/{tp}_masked.png"
-    cv2.imwrite(output_path, output_img)
 
     # print(f"Saved masked image to: {output_path}")
 
