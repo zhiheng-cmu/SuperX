@@ -46,18 +46,18 @@ def main():
 
     scene_graph_prefix = (
         f"I have a dictionary of {len(obj_record_dict_clean.keys())} object records. The keys are object ids. "
-        f"Some of these ids may refer to the same object."
         f"Within each object record, there is a list containing one or more frames of the object's appearance. "
         f"Each frame contains the following fields: "
         f"'tp': unix timestamp of the frame of appearance, \n"
         f"'label': the object's semantic label, \n"
         f"'center': the object's center location [x, y, z] in global coordinate frame with z representing elevation, \n"
         # f"'spatial_relationship': a dict of object ids that this object is 'in', 'contain', 'on', 'under', or 'beside'.\n"
-        f"'status': a string describing the object's temporal status relative to its previous appearance,"
-        f" i.e. new, moved, persistent, disappeared. New means this is the first time this object is observed. "
-        f"Persistent means the object remained stationary. Disappear means the object was seen at this place before but not seen upon revisit. \n"
+        f"'status': a string describing the object's temporal status relative to its previous appearance. "
+        f"New means this is the first time this object is observed. \n"
         )
-    scene_graph_suffix = (f"Give your answer as one or more object id numbers seperated by comma. "
+    scene_graph_suffix = (f"Note that some of the objects with the same label and are extremely close to each other "
+                          f"may refer to the same object. \n"
+                          f"Give your answer as one or more object id numbers seperated by comma. "
                           f"If there is no object meeting the requirement, answer None.\n"
                           f"\n{obj_record_dict_clean}\n")
 
@@ -67,7 +67,7 @@ def main():
     question_list = [
 
         # Spatial Consistency: instance-level object retrieval based on spatial relations
-        f"I am at the cone, and the plant on the table is on fire. I need to put out the fire asap. Which fire extinguisher should I use?\n",
+        f"I am at the cone, and the plant on the table is on fire. I need to put out the fire asap. Which single fire extinguisher should I use?\n",
 
         # Temporal Consistency: given past state, inquire current state
         f"I left my jacket on a chair next to the plant on the table a few minutes ago, but it is not there anymore. Where is my jacket now? \n",
